@@ -31,6 +31,7 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
+  function ic(nome, extra) { return '<i class="ti ti-' + nome + (extra ? " " + extra : "") + '" aria-hidden="true"></i>'; }
   function horarios(texto) {
     var lista = String(texto || "").match(/\d{1,2}[:h]\d{2}|\b\d{1,2}h\b/g) || [];
     return lista.map(function (h) {
@@ -53,18 +54,25 @@
   }
   function soDigitos(t) { return String(t || "").replace(/[^\d+]/g, ""); }
   function primeiroNome() { return (dados.paciente.nome || "").trim().split(/\s+/)[0]; }
+  function saudacao() {
+    var h = new Date().getHours();
+    return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite";
+  }
+  function iniciais(nome) {
+    return String(nome || "?").trim().split(/\s+/).slice(0, 2).map(function (p) { return p[0]; }).join("").toUpperCase();
+  }
 
   // Monta a agenda do dia: cada remédio/cuidado em cada horário
   function agendaDoDia() {
     var itens = [];
     dados.remedios.forEach(function (r, i) {
       horarios(r.horarios).forEach(function (h) {
-        itens.push({ id: "r" + i + "@" + h, hora: h, nome: r.nome, detalhe: [r.dose, r.para && "para " + r.para.toLowerCase()].filter(Boolean).join(" · "), tipo: "💊 Remédio" });
+        itens.push({ id: "r" + i + "@" + h, hora: h, nome: r.nome, detalhe: [r.dose, r.para && "para " + r.para.toLowerCase()].filter(Boolean).join(" · "), tipo: "remedio" });
       });
     });
     dados.cuidados.forEach(function (c, i) {
       horarios(c.horarios).forEach(function (h) {
-        itens.push({ id: "c" + i + "@" + h, hora: h, nome: c.texto, detalhe: "", tipo: "💚 Cuidado" });
+        itens.push({ id: "c" + i + "@" + h, hora: h, nome: c.texto, detalhe: "", tipo: "cuidado" });
       });
     });
     return itens.sort(function (a, b) { return a.hora < b.hora ? -1 : a.hora > b.hora ? 1 : 0; });
@@ -84,23 +92,26 @@
       var prox = agenda.filter(function (i) { return !feitos[i.id] && i.hora >= agora; })[0];
       var h = "";
       if (nome) {
-        h += '<p class="suave">Cuidados de</p><p class="saudacao">' + esc(dados.paciente.nome) + "</p>";
+        h += '<div class="saudacao"><div class="ola">' + saudacao() + ", cuidando de</div><div class=\"nome\">" + esc(nome) + "</div></div>";
       } else {
-        h += '<div class="cartao proximo"><p style="margin:0 0 .5rem"><strong style="font-size:1.2rem">Bem-vindo!</strong>' + esc(C.app.subtitulo) + '.</p><a class="botao cheio" href="#dados">Preencher dados da alta</a></div>';
+        h += '<div class="saudacao"><div class="ola">' + saudacao() + '</div><div class="nome">Bem-vindo</div></div>' +
+          '<a class="proximo" href="#dados"><div><div class="rotulo">Comece por aqui</div><div class="texto">Preencher os dados da alta</div></div>' + ic("chevron-right", "seta") + "</a>";
       }
       if (prox) {
-        h += '<a class="cartao proximo" href="#hoje" style="display:block;text-decoration:none;color:inherit;margin-top:1rem">' +
-          '<span class="suave">Próximo cuidado</span><strong>' + prox.hora + "</strong>" + esc(prox.nome) + "</a>";
+        h += '<a class="proximo" href="#hoje"><div><div class="rotulo">Próximo cuidado</div><div class="hora">' + prox.hora + '</div><div class="texto">' + esc(prox.nome) + "</div></div>" + ic("chevron-right", "seta") + "</a>";
       } else if (agenda.length) {
-        h += '<div class="cartao proximo" style="margin-top:1rem"><strong>Tudo certo por hoje ✔</strong></div>';
+        h += '<a class="proximo tranquilo" href="#hoje">' + ic("circle-check", "seta") + '<div><div class="texto">Tudo certo por hoje</div></div></a>';
       }
-      h += '<div class="atalhos">' +
-        '<a class="atalho" href="#hoje"><span>✅</span>Hoje</a>' +
-        '<a class="atalho" href="#cuidados"><span>💚</span>Cuidados</a>' +
-        '<a class="atalho" href="#alertas"><span>⚠️</span>Sinais de alerta</a>' +
-        '<a class="atalho" href="#contatos"><span>☎️</span>Contatos</a>' +
-        '<a class="atalho largo" href="#dados"><span>📝</span>Meus dados</a>' +
-        '<button class="atalho largo" type="button" data-acao="imprimir"><span>🖨️</span>Imprimir cartilha</button>' +
+      h += '<div class="rotulo-secao">Orientações</div><div class="blocos">' +
+        C.areas.map(function (a) {
+          return '<a class="bloco c-' + a.id + '" href="#cuidados/' + a.id + '">' + ic(a.icone) + esc(a.titulo) + "</a>";
+        }).join("") +
+        '<a class="bloco c-alerta" href="#alertas">' + ic("alert-triangle") + "Sinais de alerta</a></div>";
+      h += '<div class="rotulo-secao">No dia a dia</div><div class="lista-links">' +
+        '<a href="#hoje">' + ic("checklist") + "Remédios e cuidados de hoje" + ic("chevron-right") + "</a>" +
+        '<a href="#contatos">' + ic("address-book") + "Contatos" + ic("chevron-right") + "</a>" +
+        '<a href="#dados">' + ic("user-edit") + "Meus dados" + ic("chevron-right") + "</a>" +
+        '<button type="button" data-acao="imprimir">' + ic("printer") + "Imprimir cartilha" + ic("chevron-right") + "</button>" +
         "</div>";
       return h;
     } },
@@ -111,9 +122,10 @@
       var feitos = checksHoje(), agora = agoraHM();
       var n = agenda.filter(function (i) { return feitos[i.id]; }).length;
       var d = new Date();
-      var h = '<p class="suave" style="margin:0">' + d.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }) + "</p>" +
-        '<p style="margin:.2rem 0 0;font-weight:700">' + n + " de " + agenda.length + " feitos</p>" +
-        '<div class="progresso" aria-hidden="true"><div style="width:' + Math.round(100 * n / agenda.length) + '%"></div></div>';
+      var h = '<div class="cartao"><div class="resumo-dia"><span class="suave">' + d.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }) + "</span>" +
+        "<strong>" + n + "/" + agenda.length + "</strong></div>" +
+        '<div class="progresso" aria-hidden="true"><div style="width:' + Math.round(100 * n / agenda.length) + '%"></div></div>' +
+        '<span class="suave">' + (n === agenda.length ? "Tudo feito hoje" : "Marque cada cuidado quando fizer") + "</span></div>";
       var horaAtual = null;
       h += '<ul class="lista-hoje">';
       agenda.forEach(function (i) {
@@ -123,9 +135,11 @@
         }
         var ok = !!feitos[i.id];
         h += '<li><label class="item-check' + (ok ? " feito" : "") + '">' +
-          '<input type="checkbox" data-check="' + esc(i.id) + '"' + (ok ? " checked" : "") + ">" +
-          '<span><span class="tipo">' + i.tipo + '</span><span class="nome">' + esc(i.nome) + "</span>" +
-          (i.detalhe ? '<span class="tipo">' + esc(i.detalhe) + "</span>" : "") + "</span></label></li>";
+          '<span class="icone ' + i.tipo + '">' + ic(i.tipo === "remedio" ? "pill" : "heart-handshake") + "</span>" +
+          '<span style="flex:1"><span class="nome">' + esc(i.nome) + "</span>" +
+          (i.detalhe ? '<span class="detalhe">' + esc(i.detalhe) + "</span>" : "") + "</span>" +
+          '<input type="checkbox" data-check="' + esc(i.id) + '"' + (ok ? " checked" : "") + ' aria-label="Feito: ' + esc(i.nome) + " às " + i.hora + '">' +
+          "</label></li>";
       });
       return h + "</ul>";
     } },
@@ -133,34 +147,36 @@
     cuidados: { titulo: "Cuidados", render: function (sub) {
       var area = C.areas.filter(function (a) { return a.id === sub; })[0];
       if (!area) {
-        return '<p class="suave">Escolha um assunto:</p><div class="atalhos" style="grid-template-columns:1fr">' +
+        return '<div class="blocos" style="grid-template-columns:1fr">' +
           C.areas.map(function (a) {
-            return '<a class="atalho largo" href="#cuidados/' + a.id + '"><span>' + a.icone + "</span>" + esc(a.titulo) + "</a>";
+            return '<a class="bloco c-' + a.id + '" href="#cuidados/' + a.id + '" style="min-height:5.5rem;flex-direction:row;align-items:center;justify-content:flex-start">' + ic(a.icone) + esc(a.titulo) + "</a>";
           }).join("") + "</div>";
       }
-      definirTitulo(area.icone + " " + area.titulo, "#cuidados");
-      return '<section class="bloco-fazer"><h3>O que fazer</h3><ul class="topicos">' + lis(area.fazer) + "</ul></section>" +
-        '<section class="bloco-procurar"><h3>⚠️ Quando procurar ajuda</h3><ul class="topicos">' + lis(area.procurar) + "</ul>" +
-        '<div class="linha-botoes"><a class="botao" href="#contatos">Ver contatos</a></div></section>';
+      definirTitulo("Cuidados", "#cuidados");
+      return '<div class="cabeca-area c-' + area.id + '">' + ic(area.icone) + "<h2>" + esc(area.titulo) + "</h2></div>" +
+        '<section class="bloco-fazer"><h3>O que fazer</h3><ul class="topicos">' + lis(area.fazer) + "</ul></section>" +
+        '<section class="bloco-procurar"><h3>' + ic("alert-triangle") + "Quando procurar ajuda</h3><ul class=\"topicos\">" + lis(area.procurar) + "</ul>" +
+        '<div class="linha-botoes"><a class="botao" href="#contatos">' + ic("address-book") + "Ver contatos</a></div></section>";
     } },
 
     alertas: { titulo: "Sinais de alerta", render: function () {
+      var icones = { perigo: "urgent", atencao: "phone-call", info: "building-hospital" };
       return C.alertas.map(function (a) {
-        var botao = a.id === "samu" ? '<a class="botao" style="background:var(--cor-perigo);border-color:var(--cor-perigo)" href="tel:192">📞 Ligar 192</a>'
-          : '<a class="botao secundario" href="#contatos">Ver telefone</a>';
-        return '<section class="alerta ' + a.cor + '"><h2>' + esc(a.titulo) + '</h2><ul class="topicos">' + lis(a.itens) + "</ul>" +
+        var botao = a.id === "samu" ? '<a class="botao samu" href="tel:192">' + ic("phone") + "Ligar 192</a>"
+          : '<a class="botao secundario" href="#contatos">' + ic("address-book") + "Ver telefone</a>";
+        return '<section class="alerta ' + a.cor + '"><h2>' + ic(icones[a.cor] || "alert-triangle") + esc(a.titulo) + '</h2><ul class="topicos">' + lis(a.itens) + "</ul>" +
           (a.nota ? '<p class="nota">' + esc(a.nota) + "</p>" : "") + '<div class="linha-botoes">' + botao + "</div></section>";
       }).join("");
     } },
 
     contatos: { titulo: "Contatos", render: function () {
-      var h = '<div class="cartao contato" style="border:2px solid var(--cor-perigo)"><div><strong>SAMU</strong><div class="papel">Emergência</div></div>' +
-        '<a class="botao" style="background:var(--cor-perigo);border-color:var(--cor-perigo)" href="tel:192">📞 192</a></div>';
+      var h = '<div class="cartao contato"><span class="avatar samu">' + ic("ambulance") + '</span><div class="info"><strong>SAMU</strong><div class="papel">Emergência · 192</div></div>' +
+        '<a class="botao samu" href="tel:192" aria-label="Ligar para o SAMU">' + ic("phone") + "</a></div>";
       if (!dados.contatos.length) return h + vazio("Nenhum contato cadastrado.", "#dados", "Cadastrar em Meus dados");
       return h + dados.contatos.map(function (c) {
         var tel = soDigitos(c.telefone);
-        return '<div class="cartao contato"><div><strong>' + esc(c.nome) + '</strong><div class="papel">' + esc(c.papel) + " · " + esc(c.telefone) + "</div></div>" +
-          (tel ? '<a class="botao" href="tel:' + esc(tel) + '" aria-label="Ligar para ' + esc(c.nome) + '">📞 Ligar</a>' : "") + "</div>";
+        return '<div class="cartao contato"><span class="avatar">' + esc(iniciais(c.nome)) + '</span><div class="info"><strong>' + esc(c.nome) + '</strong><div class="papel">' + esc(c.papel) + " · " + esc(c.telefone) + "</div></div>" +
+          (tel ? '<a class="botao" href="tel:' + esc(tel) + '" aria-label="Ligar para ' + esc(c.nome) + '">' + ic("phone") + "</a>" : "") + "</div>";
       }).join("");
     } },
 
@@ -188,7 +204,7 @@
           campo("Telefone", "contatos." + i + ".telefone", c.telefone, "tel");
       });
       h += "</form>" +
-        '<div class="linha-botoes"><button type="button" class="botao" data-acao="imprimir">🖨️ Imprimir cartilha</button>' +
+        '<div class="linha-botoes"><button type="button" class="botao" data-acao="imprimir">' + ic("printer") + "Imprimir cartilha</button>" +
         '<button type="button" class="botao secundario" data-acao="exemplo">Preencher exemplo</button>' +
         '<button type="button" class="botao perigo" data-acao="apagar">Apagar tudo</button></div>';
       return h;
@@ -211,7 +227,7 @@
       itens.map(function (it, i) {
         return '<div class="subitem">' + montar(it, i) + '<button type="button" class="remover" data-remover="' + chave + "." + i + '">Remover</button></div>';
       }).join("") +
-      '<div class="linha-botoes"><button type="button" class="botao secundario" data-adicionar="' + chave + '">+ Adicionar</button></div></section>';
+      '<div class="linha-botoes"><button type="button" class="botao secundario" data-adicionar="' + chave + '">' + ic("plus") + "Adicionar</button></div></section>";
   }
 
   // ---------- Cartilha impressa ----------
@@ -220,6 +236,7 @@
     var linha = function (v) { return v ? esc(v) : '<span class="c-linha">&nbsp;</span>'; };
     var h = (C.rascunho ? '<div class="c-rascunho">RASCUNHO · conteúdo em validação pela equipe</div>' : "") +
       '<section class="c-capa"><h1>' + esc(C.app.nome) + '</h1><p class="c-sub">' + esc(C.app.subtitulo) + "</p>" +
+      '<div class="c-faixa-cores"><span class="c-nutricao"></span><span class="c-enfermagem"></span><span class="c-odonto"></span><span class="c-alerta"></span></div>' +
       '<div class="c-ficha"><p><strong>Paciente:</strong> ' + linha(p.nome) + "</p>" +
       "<p><strong>Cuidador:</strong> " + linha(p.cuidador) + "</p>" +
       "<p><strong>Data da alta:</strong> " + linha(dataBR(p.dataAlta)) + "</p>" +
@@ -254,7 +271,7 @@
     }).join("") + "</section>";
 
     h += C.areas.map(function (a) {
-      return '<section class="c-secao"><h2>' + esc(a.titulo) + "</h2><h3>O que fazer</h3><ul>" + lis(a.fazer) + "</ul>" +
+      return '<section class="c-secao c-area-' + a.id + '"><h2>' + esc(a.titulo) + "</h2><h3>O que fazer</h3><ul>" + lis(a.fazer) + "</ul>" +
         '<div class="c-procurar"><h3 style="margin-top:0">Quando procurar ajuda</h3><ul>' + lis(a.procurar) + "</ul></div></section>";
     }).join("");
 

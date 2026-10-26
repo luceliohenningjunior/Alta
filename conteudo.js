@@ -20,7 +20,7 @@ window.CONTEUDO = {
     {
       id: "nutricao",
       titulo: "Nutrição",
-      icone: "🍲",
+      icone: "salad",
       fazer: [
         "Ofereça pequenas porções várias vezes ao dia (6 a 8 vezes), sem forçar.",
         "Respeite o apetite e as preferências da pessoa. Comer também é conforto.",
@@ -37,7 +37,7 @@ window.CONTEUDO = {
     {
       id: "enfermagem",
       titulo: "Enfermagem",
-      icone: "🩺",
+      icone: "stethoscope",
       fazer: [
         "Dê os remédios nos horários marcados. O remédio de dor é no horário, mesmo sem dor.",
         "Se a pessoa fica muito na cama, mude a posição a cada 2 horas.",
@@ -55,7 +55,7 @@ window.CONTEUDO = {
     {
       id: "odonto",
       titulo: "Saúde da boca",
-      icone: "🦷",
+      icone: "dental",
       fazer: [
         "Limpe a boca 2 vezes ao dia e depois das refeições, com escova macia ou gaze molhada.",
         "Prótese (dentadura): tire à noite, lave com escova e guarde num copo com água.",

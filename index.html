@@ -4,31 +4,35 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Cuidar em Casa</title>
-  <meta name="theme-color" content="#0f6e6a">
+  <meta name="theme-color" content="#fbf6ee">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Nunito:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="tema.css">
   <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
   <div id="app">
     <header class="topo">
-      <a href="#inicio" class="voltar" id="voltar" aria-label="Voltar ao início" hidden>‹</a>
+      <a href="#inicio" class="voltar" id="voltar" aria-label="Voltar" hidden><i class="ti ti-chevron-left"></i></a>
       <h1 id="titulo-tela">Cuidar em Casa</h1>
     </header>
 
-    <div class="faixa-rascunho" id="faixa-rascunho" hidden>RASCUNHO · conteúdo em validação pela equipe</div>
+    <div class="faixa-rascunho" id="faixa-rascunho" hidden>Rascunho · conteúdo em validação pela equipe</div>
 
     <main id="tela" tabindex="-1"></main>
 
     <a class="botao-samu" href="tel:192" aria-label="Ligar para o SAMU 192">
-      <span aria-hidden="true">📞</span> Ligar SAMU 192
+      <i class="ti ti-phone" aria-hidden="true"></i> SAMU 192
     </a>
 
     <nav class="abas" aria-label="Navegação principal">
-      <a href="#inicio" data-aba="inicio"><span aria-hidden="true">🏠</span>Início</a>
-      <a href="#hoje" data-aba="hoje"><span aria-hidden="true">✅</span>Hoje</a>
-      <a href="#cuidados" data-aba="cuidados"><span aria-hidden="true">💚</span>Cuidados</a>
-      <a href="#alertas" data-aba="alertas"><span aria-hidden="true">⚠️</span>Alertas</a>
-      <a href="#contatos" data-aba="contatos"><span aria-hidden="true">☎️</span>Contatos</a>
+      <a href="#inicio" data-aba="inicio"><i class="ti ti-home" aria-hidden="true"></i>Início</a>
+      <a href="#hoje" data-aba="hoje"><i class="ti ti-checklist" aria-hidden="true"></i>Hoje</a>
+      <a href="#cuidados" data-aba="cuidados"><i class="ti ti-heart-handshake" aria-hidden="true"></i>Cuidados</a>
+      <a href="#alertas" data-aba="alertas"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Alertas</a>
+      <a href="#contatos" data-aba="contatos"><i class="ti ti-address-book" aria-hidden="true"></i>Contatos</a>
     </nav>
   </div>
 
