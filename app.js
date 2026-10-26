@@ -95,7 +95,7 @@
         h += '<div class="saudacao"><div class="ola">' + saudacao() + ", cuidando de</div><div class=\"nome\">" + esc(nome) + "</div></div>";
       } else {
         h += '<div class="saudacao"><div class="ola">' + saudacao() + '</div><div class="nome">Bem-vindo</div></div>' +
-          '<a class="proximo" href="#dados"><div><div class="rotulo">Comece por aqui</div><div class="texto">Preencher os dados da alta</div></div>' + ic("chevron-right", "seta") + "</a>";
+          '<a class="proximo" href="#dados"><div><div class="rotulo">Comece por aqui</div><div class="texto">Preencher os dados da alta</div></div>' + ic("chevron-right", "seta") + "</a>" + cartaoExemplo();
       }
       if (prox) {
         h += '<a class="proximo" href="#hoje"><div><div class="rotulo">Próximo cuidado</div><div class="hora">' + prox.hora + '</div><div class="texto">' + esc(prox.nome) + "</div></div>" + ic("chevron-right", "seta") + "</a>";
@@ -182,7 +182,7 @@
 
     dados: { titulo: "Meus dados", render: function () {
       var p = dados.paciente;
-      var h = '<p class="suave">Preenchido pela equipe no momento da alta. Os dados ficam guardados só neste aparelho.</p>' +
+      var h = (dadosPreenchidos() ? "" : cartaoExemplo()) + '<p class="suave">Preenchido pela equipe no momento da alta. Os dados ficam guardados só neste aparelho.</p>' +
         '<form id="form-dados" autocomplete="off">' +
         '<section class="cartao"><h2>Paciente</h2>' +
         campo("Nome do paciente", "paciente.nome", p.nome) +
@@ -212,6 +212,10 @@
   };
 
   // ---------- Pedaços de HTML ----------
+  function cartaoExemplo() {
+    return '<button type="button" class="cartao-exemplo" data-acao="exemplo">' + ic("sparkles") +
+      '<span><strong>Ver com paciente de exemplo</strong><span class="suave">Preenche remédios, horários e contatos fictícios</span></span>' + ic("chevron-right") + "</button>";
+  }
   function lis(itens) { return itens.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join(""); }
   function vazio(texto, link, rotulo) {
     return '<div class="cartao vazio"><p>' + esc(texto) + '</p><a class="botao" href="' + link + '">' + esc(rotulo) + "</a></div>";

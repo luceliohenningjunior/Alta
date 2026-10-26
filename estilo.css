@@ -281,3 +281,15 @@ input:focus { border-color: var(--cor-principal); outline: none; }
 
   .c-rascunho { border: 2px dashed var(--cor-atencao); color: var(--cor-atencao); border-radius: 3mm; text-align: center; font-weight: 700; padding: 2mm; margin-bottom: 6mm; }
 }
+
+/* ---------- Atalho do exemplo (app vazio) ---------- */
+.cartao-exemplo {
+  display: flex; align-items: center; gap: .9rem; width: 100%; margin: .8rem 0 1rem;
+  padding: .9rem 1rem; border-radius: var(--raio); cursor: pointer; text-align: left;
+  background: var(--cor-cartao); border: 2px dashed var(--cor-principal);
+}
+.cartao-exemplo > .ti:first-child { font-size: 1.6rem; color: var(--cor-principal); }
+.cartao-exemplo strong { display: block; color: var(--cor-principal-escura); }
+.cartao-exemplo .suave { display: block; font-size: .8rem; }
+.cartao-exemplo .ti-chevron-right { margin-left: auto; color: var(--cor-texto-suave); }
+@media print { .cartao-exemplo { display: none; } }
